@@ -1,53 +1,4 @@
-import { Canvas } from "@react-three/fiber";
-import { Environment, OrbitControls, useGLTF } from "@react-three/drei";
 import { motion } from "framer-motion";
-import { Suspense, useEffect, useRef } from "react";
-import * as THREE from "three";
-
-const AvatarModel = ({ isSpeaking }: { isSpeaking: boolean }) => {
-  const { scene } = useGLTF(
-    "https://api.readyplayer.me/v1/avatars/6906484448062250a4acb11e.glb?morphTargets=ARKit"
-  );
-
-  const meshRef = useRef<THREE.Group>(null);
-  const faceMeshRef = useRef<THREE.Mesh | null>(null);
-  useEffect(() => {
-    scene.traverse((child) => {
-      if (child instanceof THREE.Mesh && child.name.includes("Head")) {
-        faceMeshRef.current = child;
-      }
-    });
-  }, [scene]);
-
-  // Idle breathing animation
-  const idleAnimation = () => {
-    // Subtle breathing when idle
-    if (meshRef.current && !isSpeaking) {
-      meshRef.current.position.y = Math.sin(Date.now() * 0.001) * 0.02;
-    }
-
-    // Fallback: Animate jaw rotation instead of morph targets
-    if (isSpeaking && meshRef.current) {
-      const head = meshRef.current.getObjectByName("Head") as THREE.Object3D;
-      if (head) {
-        head.rotation.x = Math.sin(Date.now() * 0.02) * 0.1; // mouth bob effect
-      }
-    } else if (meshRef.current) {
-      const head = meshRef.current.getObjectByName("Head") as THREE.Object3D;
-      if (head) head.rotation.x = 0; // reset
-    }
-  };
-
-  return (
-    <primitive
-      ref={meshRef}
-      object={scene}
-      scale={2.0}
-      position={[0, -2.3, 0]} // lower the model a bit
-      onBeforeRender={idleAnimation}
-    />
-  );
-};
 
 interface AvatarViewerProps {
   isSpeaking: boolean;
@@ -67,22 +18,14 @@ const AvatarViewer = ({ isSpeaking }: AvatarViewerProps) => {
         } bg-accent/40 -z-10`}
       />
 
-      <Canvas camera={{ position: [0, 1.9, 3.2], fov: 35 }}>
-        <ambientLight intensity={0.8} />
-        <directionalLight position={[0, 1.5, 2]} intensity={0.8} />
-        <ambientLight intensity={0.6} />
-
-        <Suspense fallback={null}>
-          <AvatarModel isSpeaking={isSpeaking} />
-          <Environment preset="city" />
-        </Suspense>
-        <OrbitControls
-          enableZoom={false}
-          enablePan={false}
-          minPolarAngle={Math.PI / 2.8}
-          maxPolarAngle={Math.PI / 1.9}
+      {/* WebGL avatar disabled to avoid runtime crashes from remote GLB loading. */}
+      <div className="h-full w-full rounded-full border border-border/50 bg-gradient-to-b from-muted/60 to-background/70 backdrop-blur-sm flex items-center justify-center">
+        <div
+          className={`h-20 w-20 rounded-full transition-transform duration-300 ${
+            isSpeaking ? "scale-105" : "scale-100"
+          } bg-accent/30 border border-accent/50`}
         />
-      </Canvas>
+      </div>
     </motion.div>
   );
 };

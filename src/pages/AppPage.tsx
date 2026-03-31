@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useEffect } from "react";
-import AvatarViewer from "@/components/AvatarViewer";
+// import AvatarViewer from "@/components/AvatarViewer";
 import MicButton from "@/components/MicButton";
 import ChatPanel from "@/components/ChatPanel";
 import UserHeader from "@/components/UserHeader";
@@ -72,7 +72,7 @@ const AppPage = () => {
       {/* Avatar Center Stage */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div className="w-[500px] h-[600px]">
-          <AvatarViewer isSpeaking={isSpeaking} />
+          {/* <AvatarViewer isSpeaking={isSpeaking} /> */}
         </div>
       </div>
 

@@ -35,6 +35,10 @@ const FraudQuiz = () => {
     setIsFinished(false);
 
     try {
+      if (!GEMINI_API_KEY) {
+        throw new Error("Missing VITE_GEMINI_API_KEY in environment variables.");
+      }
+
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
         {
@@ -71,7 +75,23 @@ Return ONLY valid JSON (no markdown, no code blocks) in this exact format:
         }
       );
 
-      if (!response.ok) throw new Error("Gemini API request failed.");
+      if (!response.ok) {
+        if (response.status === 429) {
+          throw new Error(
+            "Gemini API quota/rate limit exceeded (429). Please try again later or use a key with available quota."
+          );
+        }
+
+        let apiError = `HTTP ${response.status}`;
+        try {
+          const errJson = await response.json();
+          apiError = errJson?.error?.message || apiError;
+        } catch {
+          // Ignore JSON parsing errors and keep the HTTP status message.
+        }
+
+        throw new Error(`Gemini API request failed: ${apiError}`);
+      }
 
       const data = await response.json();
       const textContent =
